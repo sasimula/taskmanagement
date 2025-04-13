@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Profile - Task Management System</title>
+    <link type="text/css" href="{{ url_for('static', path='styles.css') }}" rel="stylesheet"/>
+    <script type="module" src="{{ url_for('static', path='firebase-login.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>User Profile</h1>
+            <div>
+                <a href="/" class="btn">Back to Boards</a>
+                <button id="sign-out" hidden="true" class="btn btn-danger">Sign out</button>
+            </div>
+        </div>
+
+        {% if user_token %}
+            <div class="welcome-section">
+                <div class="user-greeting">
+                    <h2>Welcome, {{ user_token.email }}</h2>
+                </div>
+                <div class="navigation">
+                    <a href="/" class="btn">Dashboard</a>
+                    <a href="/new-board" class="btn">Create New Board</a>
+                    <a href="/profile" class="btn active">My Profile</a>
+                </div>
+            </div>
+
+            <div class="profile-container">
+                <div class="profile-section">
+                    <h2>Your Profile</h2>
+                    <div class="profile-info">
+                        <div class="profile-field">
+                            <label>Email:</label>
+                            <span>{{ user_token.email }}</span>
+                        </div>
+                        <div class="profile-field">
+                            <label>User ID:</label>
+                            <span>{{ user_token.user_id }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-section">
+                    <h2>Statistics</h2>
+                    <div class="stats-container">
+                        <div class="stat-box">
+                            <div class="stat-number">{{ user_info.created_boards|length }}</div>
+                            <div class="stat-label">Boards Created</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">{{ user_info.member_boards|length }}</div>
+                            <div class="stat-label">Boards Joined</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="login-box">
+                <p>You must be logged in to view your profile. <a href="/">Return to login</a></p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
