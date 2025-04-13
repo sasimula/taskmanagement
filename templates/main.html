@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Management System</title>
+    <link type="text/css" href="{{ url_for('static', path='styles.css') }}" rel="stylesheet"/>
+    <script type="module" src="{{ url_for('static', path='firebase-login.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Task Management System</h1>
+            <div class="header-actions">
+                {% if user_token %}
+                    <button id="sign-out" class="btn btn-danger">Sign out</button>
+                {% else %}
+                    <div class="auth-buttons">
+                        <a href="/login" class="btn">Log In</a>
+                        <a href="/register" class="btn btn-success">Register</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- If we have a logged in user then show the user email address from the user_token object that was passed in -->
+        {% if user_token %}
+            <div class="welcome-section">
+                <div class="user-greeting">
+                    <h2>Welcome, {{ user_token.email }}</h2>
+                    <p>{{ error_message }}</p>
+                </div>
+                <div class="navigation">
+                    <a href="/" class="btn">Dashboard</a>
+                    <a href="/new-board" class="btn">Create New Board</a>
+                    <a href="/profile" class="btn">My Profile</a>
+                </div>
+            </div>
+
+            <!-- Create Task Board Form -->
+            <div class="login-box create-board-box">
+                <h2>Create New Task Board</h2>
+                <form action="/create-board" method="post">
+                    <div class="form-group">
+                        <label for="board_name">Board Name:</label>
+                        <input type="text" id="board_name" name="board_name" required placeholder="Enter board name">
+                    </div>
+                    <button type="submit" class="btn btn-success">Create Board</button>
+                </form>
+            </div>
+
+            <!-- Display list of boards -->
+            <h2 class="section-title">Your Task Boards</h2>
+            {% if boards %}
+                <div class="board-list">
+                    {% for board in boards %}
+                        <div class="board-item">
+                            <h3>{{ board.name }}</h3>
+                            <span class="board-creator {% if board.is_creator %}is-creator{% endif %}">
+                                {% if board.is_creator %}
+                                    Created by you
+                                {% else %}
+                                    Created by {{ board.creator_email }}
+                                {% endif %}
+                                on {{ board.created_at.strftime('%Y-%m-%d') }}
+                            </span>
+                            <a href="/board/{{ board.id }}" class="btn board-view-btn">View Board</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>You don't have any task boards yet.</p>
+                    <p>Create one above or ask someone to add you to their board.</p>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="welcome-hero">
+                <div class="hero-content">
+                    <h2>Organize Tasks, Boost Productivity</h2>
+                    <p class="hero-description">Our task management system helps teams collaborate effectively and meet deadlines with ease.</p>
+                    <div class="hero-actions">
+                        <a href="/register" class="btn btn-success btn-large">Get Started</a>
+                        <a href="/login" class="btn btn-secondary btn-large">Log In</a>
+                    </div>
+                </div>
+                
+                <div class="features-section">
+                    <h3>Key Features</h3>
+                    <div class="feature-cards">
+                        <div class="feature-card">
+                            <div class="feature-icon">📋</div>
+                            <h4>Task Boards</h4>
+                            <p>Create custom boards for different projects or teams</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">👥</div>
+                            <h4>Team Collaboration</h4>
+                            <p>Invite team members to share boards and tasks</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">✓</div>
+                            <h4>Progress Tracking</h4>
+                            <p>Monitor task completion and team productivity</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">⏱️</div>
+                            <h4>Deadline Management</h4>
+                            <p>Set due dates and get organized</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
