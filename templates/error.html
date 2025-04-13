@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error - Task Management System</title>
+    <link type="text/css" href="{{ url_for('static', path='styles.css') }}" rel="stylesheet"/>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Error Occurred</h1>
+            <a href="/" class="btn">Back to Home</a>
+        </div>
+
+        <div class="login-box">
+            <h2>Something went wrong</h2>
+            <p class="error-message">{{ error_message }}</p>
+        </div>
+    </div>
+</body>
+</html>
