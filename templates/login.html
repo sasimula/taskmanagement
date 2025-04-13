@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Task Management System</title>
+    <link type="text/css" href="{{ url_for('static', path='styles.css') }}" rel="stylesheet"/>
+    <script type="module" src="{{ url_for('static', path='firebase-login.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Task Management System</h1>
+            <a href="/" class="btn">Home</a>
+        </div>
+
+        <div class="auth-container">
+            <div class="auth-box login-box">
+                <h2>Log in to your account</h2>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                
+                <button id="login-btn" class="btn btn-success btn-block">Log In</button>
+                
+                <div class="auth-links">
+                    <p>Don't have an account? <a href="/register">Sign Up</a></p>
+                </div>
+                
+                <div id="error-message" class="error-message" style="display: none;">
+                    <p>Invalid email or password. Please try again.</p>
+                </div>
+            </div>
+            
+            <div class="auth-info">
+                <h3>Welcome Back!</h3>
+                <p>Log in to manage your task boards, collaborate with your team, and track your progress.</p>
+                <ul class="feature-list">
+                    <li>Create and manage task boards</li>
+                    <li>Collaborate with team members</li>
+                    <li>Track task completion status</li>
+                    <li>Organize your workflow efficiently</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
