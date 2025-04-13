@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create New Board - Task Management System</title>
+    <link type="text/css" href="{{ url_for('static', path='styles.css') }}" rel="stylesheet"/>
+    <script type="module" src="{{ url_for('static', path='firebase-login.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Create New Task Board</h1>
+            <div>
+                <a href="/" class="btn">Back to Boards</a>
+                <button id="sign-out" hidden="true" class="btn btn-danger">Sign out</button>
+            </div>
+        </div>
+
+        {% if user_token %}
+            <div class="welcome-section">
+                <div class="user-greeting">
+                    <h2>Welcome, {{ user_token.email }}</h2>
+                </div>
+                <div class="navigation">
+                    <a href="/" class="btn">Dashboard</a>
+                    <a href="/new-board" class="btn active">Create New Board</a>
+                    <a href="/profile" class="btn">My Profile</a>
+                </div>
+            </div>
+
+            <div class="login-box create-board-box">
+                <h2>Create New Task Board</h2>
+                <p>Create a new board to organize your tasks. You can invite other users to collaborate.</p>
+                <form action="/create-board" method="post">
+                    <div class="form-group">
+                        <label for="board_name">Board Name:</label>
+                        <input type="text" id="board_name" name="board_name" required placeholder="Enter a descriptive name">
+                    </div>
+                    <button type="submit" class="btn btn-success">Create Board</button>
+                    <a href="/" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        {% else %}
+            <div class="login-box">
+                <p>You must be logged in to create a board. <a href="/">Return to login</a></p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
