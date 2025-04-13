@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ board.name }} - Task Board</title>
+    <link type="text/css" href="{{ url_for('static', path='styles.css') }}" rel="stylesheet"/>
+    <script type="module" src="{{ url_for('static', path='firebase-login.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{ board.name }}</h1>
+            <div>
+                <a href="/" class="btn">Back to Boards</a>
+                <button id="sign-out" hidden="true" class="btn btn-danger">Sign out</button>
+            </div>
+        </div>
+
+        {% if user_token %}
+            <div class="welcome-section">
+                <div class="user-greeting">
+                    <h2>Welcome, {{ user_token.email }}</h2>
+                </div>
+                <div class="navigation">
+                    <a href="/" class="btn">Dashboard</a>
+                    <a href="/new-board" class="btn">Create New Board</a>
+                    <a href="/profile" class="btn">My Profile</a>
+                </div>
+            </div>
+
+            <!-- Board info and actions -->
+            <div class="board-info">
+                <p class="board-meta">
+                    Created by {{ board.creator_email }} on {{ board.created_at.strftime('%Y-%m-%d') }}
+                    {% if is_creator %}
+                        <span class="board-creator is-creator">(You are the board creator)</span>
+                    {% endif %}
+                </p>
+
+                <!-- Task Counters -->
+                <div class="task-counters">
+                    <div class="counter">
+                        <span class="counter-number">{{ active_tasks }}</span>
+                        <span class="counter-label">Active Tasks</span>
+                    </div>
+                    <div class="counter">
+                        <span class="counter-number">{{ completed_tasks }}</span>
+                        <span class="counter-label">Completed Tasks</span>
+                    </div>
+                    <div class="counter">
+                        <span class="counter-number">{{ total_tasks }}</span>
+                        <span class="counter-label">Total Tasks</span>
+                    </div>
+                </div>
+
+                <!-- Board actions for creator -->
+                {% if is_creator %}
+                    <div class="board-actions">
+                        <!-- Rename Board Form -->
+                        <form action="/rename-board" method="post" class="inline-form">
+                            <input type="hidden" name="board_id" value="{{ board_id }}">
+                            <div class="form-group">
+                                <label for="new_name">Rename Board:</label>
+                                <input type="text" id="new_name" name="new_name" value="{{ board.name }}" required>
+                                <button type="submit" class="btn">Rename</button>
+                            </div>
+                        </form>
+
+                        <!-- Delete Board Button (only if no tasks and no other members) -->
+                        {% if total_tasks == 0 and members|length == 1 %}
+                            <form action="/delete-board" method="post" class="inline-form" onsubmit="return confirm('Are you sure you want to delete this board?');">
+                                <input type="hidden" name="board_id" value="{{ board_id }}">
+                                <button type="submit" class="btn btn-danger">Delete Board</button>
+                            </form>
+                        {% else %}
+                            <p class="note">
+                                Note: To delete this board, you must first remove all tasks and other members.
+                            </p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="board-content">
+                {% if request.query_params.get('error') == 'duplicate_task' %}
+    <div class="error-message">
+        <p>A task with this name already exists on this board. Please use a different name.</p>
+    </div>
+{% endif %}
+                <div class="board-section">
+                    <!-- Add Task Form -->
+                    <div class="login-box task-form">
+                        <h2>Add New Task</h2>
+                        <form action="/add-task" method="post">
+                            <input type="hidden" name="board_id" value="{{ board_id }}">
+                            <div class="form-group">
+                                <label for="title">Task Title:</label>
+                                <input type="text" id="title" name="title" required placeholder="Enter task title">
+                            </div>
+                            <div class="form-group">
+                                <label for="due_date">Due Date:</label>
+                                <input type="date" id="due_date" name="due_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="assigned_to">Assign To:</label>
+                                <select id="assigned_to" name="assigned_to">
+                                    <option value="">Unassigned</option>
+                                    {% for member in members %}
+                                        <option value="{{ member.id }}">{{ member.email }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">Add Task</button>
+                        </form>
+                    </div>
+
+                    <!-- Tasks -->
+                    <div class="tasks-section">
+                        <h2>Tasks</h2>
+                        {% if tasks %}
+                            <div class="task-list">
+                                {% for task in tasks %}
+                                    <div class="task-item {% if task.completed %}completed{% endif %} {% if task.unassigned %}unassigned{% endif %}">
+                                        <div class="task-content">
+                                            <span class="task-title">{{ task.title }}</span>
+                                            <span class="task-due-date">Due: {{ task.due_date }}</span>
+                                            
+                                            {% if task.assigned_to %}
+                                                {% for member in members %}
+                                                    {% if member.id == task.assigned_to %}
+                                                        <span class="task-assigned">Assigned to: {{ member.email }}</span>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% else %}
+                                                <span class="task-assigned">Unassigned</span>
+                                            {% endif %}
+                                            
+                                            {% if task.completed and task.completion_date %}
+                                                <span class="completion-date">Completed on: {{ task.completion_date.strftime('%Y-%m-%d %H:%M') }}</span>
+                                            {% endif %}
+                                            
+                                            {% if task.unassigned %}
+                                                <span class="unassigned-warning">This task was assigned to a user who is no longer a member of this board.</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="task-actions">
+                                            <!-- Toggle completion status -->
+                                            <form action="/toggle-task" method="post" style="display: inline;">
+                                                <input type="hidden" name="task_id" value="{{ task.id }}">
+                                                <input type="hidden" name="board_id" value="{{ board_id }}">
+                                                <button type="submit" class="btn {% if task.completed %}btn-danger{% else %}btn-success{% endif %}">
+                                                    {% if task.completed %}Mark Incomplete{% else %}Mark Complete{% endif %}
+                                                </button>
+                                            </form>
+                                            
+                                            <!-- Edit task button/form -->
+                                            <button onclick="document.getElementById('edit-task-{{ task.id }}').style.display = 'block';" class="btn">Edit</button>
+                                            
+                                            <!-- Delete task button -->
+                                            <form action="/delete-task" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this task?');">
+                                                <input type="hidden" name="task_id" value="{{ task.id }}">
+                                                <input type="hidden" name="board_id" value="{{ board_id }}">
+                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                        
+                                        <!-- Edit Task Form (hidden by default) -->
+                                        <div id="edit-task-{{ task.id }}" style="display: none;" class="edit-task-form">
+                                            <form action="/edit-task" method="post">
+                                                <input type="hidden" name="task_id" value="{{ task.id }}">
+                                                <input type="hidden" name="board_id" value="{{ board_id }}">
+                                                <div class="form-group">
+                                                    <label for="title-{{ task.id }}">Task Title:</label>
+                                                    <input type="text" id="title-{{ task.id }}" name="title" value="{{ task.title }}" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="due_date-{{ task.id }}">Due Date:</label>
+                                                    <input type="date" id="due_date-{{ task.id }}" name="due_date" value="{{ task.due_date }}" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="assigned_to-{{ task.id }}">Assign To:</label>
+                                                    <select id="assigned_to-{{ task.id }}" name="assigned_to">
+                                                        <option value="">Unassigned</option>
+                                                        {% for member in members %}
+                                                            <option value="{{ member.id }}" {% if task.assigned_to == member.id %}selected{% endif %}>
+                                                                {{ member.email }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                                <div class="form-actions">
+                                                    <button type="submit" class="btn">Save Changes</button>
+                                                    <button type="button" onclick="document.getElementById('edit-task-{{ task.id }}').style.display = 'none';" class="btn btn-secondary">Cancel</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <p>No tasks yet. Add your first task above!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="board-sidebar">
+                    <!-- Board Members -->
+                    <div class="user-list">
+                        <h2>Board Members</h2>
+                        {% for member in members %}
+                            <div class="user-item">
+                                <div class="user-details">
+                                    {{ member.email }}
+                                    {% if member.is_creator %}
+                                        <span class="board-creator is-creator">(Creator)</span>
+                                    {% endif %}
+                                </div>
+                                {% if is_creator and not member.is_creator %}
+                                    <div class="user-actions">
+                                        <form action="/remove-user-from-board" method="post">
+                                            <input type="hidden" name="board_id" value="{{ board_id }}">
+                                            <input type="hidden" name="user_id" value="{{ member.id }}">
+                                            <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <!-- Add User Form (only visible to creator) -->
+                        {% if is_creator %}
+                            <div class="add-user-form">
+                                <h3>Add User to Board</h3>
+                                <form action="/add-user-to-board" method="post">
+                                    <input type="hidden" name="board_id" value="{{ board_id }}">
+                                    <div class="form-group">
+                                        <label for="user_email">User Email:</label>
+                                        <input type="email" id="user_email" name="user_email" required placeholder="Enter user email">
+                                    </div>
+                                    <button type="submit" class="btn">Add User</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
