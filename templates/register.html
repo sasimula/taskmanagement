@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - Task Management System</title>
+    <link type="text/css" href="{{ url_for('static', path='styles.css') }}" rel="stylesheet"/>
+    <script type="module" src="{{ url_for('static', path='firebase-login.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Task Management System</h1>
+            <a href="/" class="btn">Home</a>
+        </div>
+
+        <div class="auth-container">
+            <div class="auth-box register-box">
+                <h2>Create an Account</h2>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Choose a password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm-password">Confirm Password</label>
+                    <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" required>
+                </div>
+                
+                <button id="register-btn" class="btn btn-success btn-block">Create Account</button>
+                
+                <div class="auth-links">
+                    <p>Already have an account? <a href="/login">Log In</a></p>
+                </div>
+                
+                <div id="error-message" class="error-message" style="display: none;">
+                    <p>There was an error creating your account. Please try again.</p>
+                </div>
+            </div>
+            
+            <div class="auth-info">
+                <h3>Get Started Today!</h3>
+                <p>Create an account to start organizing your tasks and collaborating with your team.</p>
+                <ul class="feature-list">
+                    <li>Create unlimited task boards</li>
+                    <li>Invite team members to collaborate</li>
+                    <li>Track your productivity</li>
+                    <li>Manage deadlines effectively</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
